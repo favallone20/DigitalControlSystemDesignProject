@@ -235,6 +235,14 @@ int y_k_expected_columns = 1;
 int u_rows = 1;
 int u_columns = 1;
 
+
+double kp_1 = 0.0770;
+double kp_2 = -0.0645;
+double ki = 0.042;
+double y_integrator = 0;
+double y_integrator_last = 0;
+double error_integrator_last = 0;
+
 double** createMatrix(int n, int m) {
 	double *values = (double*) calloc(m * n, sizeof(double));
 	double **rows = (double**) malloc(n * sizeof(double*));
@@ -250,7 +258,7 @@ void multiply_matricies(double **m1, double **m2, int m1_rows, int m1_columns,
 	for (int i = 0; i < m1_rows; i++) {
 		for (int j = 0; j < m2_columns; j++) {
 			m3[i][j] = 0;
-			for (int k = 0; k < m1_rows; k++) {
+			for (int k = 0; k < m1_rows && k<m2_rows; k++) {
 				m3[i][j] += m1[i][k] * m2[k][j];
 			}
 		}
@@ -310,6 +318,7 @@ int main(void) {
 	/* USER CODE END 1 */
 	/* MCU Configuration--------------------------------------------------------*/
 
+	matrix_inizialization();
 	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
 	HAL_Init();
 
@@ -341,7 +350,7 @@ int main(void) {
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
 
-	matrix_inizialization();
+
 
 	int referenceIndex = 0;
 
@@ -619,7 +628,7 @@ static void MX_GPIO_Init(void) {
 void luenberger_observer(double u_last, double y) {
 
 	for(int i=0; i<state_rows;i++){
-		for(int j =0; j< state_columns; i++){
+		for(int j =0; j< state_columns; j++){
 			state_k[i][j] = state_kplus1[i][j];
 		}
 	}
@@ -666,33 +675,28 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		double speed = getSpeedByDelta(
 				getTicksDelta(currentTicks, lastTicks, Ts), Ts);
 
-		// state estimation with Luenberger observer
+		// state estimation with Luenberger observer, after this function the state_k is updated
 		luenberger_observer(u_last, speed);
 
-		double e = referenceVal - speed;
-		double q_gamma_z = 0.13 * e - 0.1056 * e_last;
-		double z = z_last;
+		// State Feedback --------------------------------------------
+		double error = speed - referenceVal;
+		y_integrator = y_integrator_last -ki*error_integrator_last;
 
-		double u1 = (q_gamma_z + z) > 12 ? 12 : q_gamma_z + z;
-		u1 = u1 < -12 ? -12 : u1;
+		double kx = kp_1*state_k[0][0] + kp_2*state_k[1][0];
 
-		double u2 = -0.6324 * u2_last + 0.1083 * speed - 0.1083 * speed_last;
-
-		double u = u1 - u2;
+		double u = y_integrator - kx;
 
 		setPulseFromDutyValue(u * 100 / 12);
 
-		u_last = u;
-		e_last = e;
-		z_last = u1;
-		speed_last = speed;
-		u2_last = u2;
+		//------------------------------------------------------------
+
+		error_integrator_last = error;
 
 		controlComputationDuration = HAL_GetTick() - tocControlStep;
 		lastTicks = currentTicks;
 		// recording data in the buffer
 		record r;
-		r.current_u = u1;
+		r.current_u = u;
 		r.current_y = speed;
 		r.cycleCoreDuration = controlComputationDuration;
 		r.cycleBeginDelay = tocControlStep - ticControlStep
