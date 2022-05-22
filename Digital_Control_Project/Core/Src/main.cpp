@@ -215,6 +215,10 @@ int samplingPrescalerCounter = 0;
 double **Ad;
 double **Bd;
 double **Cd;
+double **state_kplus1;
+double **state_k;
+double **y_k_expected;
+double **L;
 
 int Ad_rows = 2;
 int Ad_columns = 2;
@@ -222,6 +226,14 @@ int Bd_rows = 2;
 int Bd_columns = 1;
 int Cd_rows = 1;
 int Cd_columns = 2;
+int L_rows = 2;
+int L_columns = 1;
+int state_rows = 2;
+int state_columns = 1;
+int y_k_expected_rows = 1;
+int y_k_expected_columns = 1;
+int u_rows = 1;
+int u_columns = 1;
 
 double** createMatrix(int n, int m) {
 	double *values = (double*) calloc(m * n, sizeof(double));
@@ -245,7 +257,7 @@ void multiply_matricies(double **m1, double **m2, int m1_rows, int m1_columns,
 	}
 }
 
-void destroyArray(float **arr) {
+void destroyArray(double **arr) {
 	free(*arr);
 	free(arr);
 }
@@ -264,6 +276,27 @@ void matrix_inizialization() {
 	Cd = createMatrix(Cd_rows, Cd_columns);
 	Cd[0][0] = 1.4424;
 	Cd[0][1] = 0.4751;
+
+	L = createMatrix(L_rows, L_columns);
+	L[0][0] = 0.3789;
+	L[1][0] = 0.4549;
+
+	state_kplus1 = createMatrix(state_rows, state_columns);
+	state_k = createMatrix(state_rows, state_columns);
+	y_k_expected = createMatrix(y_k_expected_rows, y_k_expected_columns);
+
+}
+
+/**
+ * Return the result in the matrix m1
+ */
+void matrix_sum(double **m1, double **m2, double rows, double columns) {
+
+	for (int i = 0; i < rows; i++) {
+		for (int j = 0; j < columns; j++) {
+			m1[i][j] = m1[i][j] + m2[i][j];
+		}
+	}
 }
 
 /* USER CODE END 0 */
@@ -308,7 +341,7 @@ int main(void) {
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
 
-	matrix_initialization();
+	matrix_inizialization();
 
 	int referenceIndex = 0;
 
@@ -583,14 +616,39 @@ static void MX_GPIO_Init(void) {
 
 }
 
-
-
 void luenberger_observer(double u_last, double y) {
-	double** u_matrix = createMatrix(1, 1);
-	u_matrix[0][0] = u_last
 
-	double **sum1 = createMatrix(Bd_rows, 1);
-	multiply_matricies(Bd, u_matrix, Bd_rows, Bd_columns, 1, 1, sum1);
+	for(int i=0; i<state_rows;i++){
+		for(int j =0; j< state_columns; i++){
+			state_k[i][j] = state_kplus1[i][j];
+		}
+	}
+
+	double **u_matrix = createMatrix(u_rows, u_columns);
+	u_matrix[0][0] = u_last;
+
+	double **sum_center = createMatrix(Bd_rows, u_columns);
+	multiply_matricies(Bd, u_matrix, Bd_rows, Bd_columns, 1, 1, sum_center);
+
+	double **sub_y = createMatrix(y_k_expected_rows, y_k_expected_columns);
+	multiply_matricies(Cd, state_k, Cd_rows, Cd_columns, state_rows, state_columns, y_k_expected);
+	sub_y[0][0] = y - y_k_expected[0][0];
+
+	double **sum_top = createMatrix(L_rows, y_k_expected_columns);
+	multiply_matricies(L, sub_y, L_rows, L_columns, y_k_expected_rows, y_k_expected_columns, sum_top);
+
+	double **sum_bottom = createMatrix(Ad_rows, state_columns);
+	multiply_matricies(Ad, state_k, Ad_rows,Ad_columns, state_rows, state_columns, sum_bottom);
+
+	matrix_sum(state_kplus1, sum_top, L_rows, y_k_expected_columns);
+	matrix_sum(state_kplus1, sum_center, L_rows, y_k_expected_columns);
+	matrix_sum(state_kplus1, sum_bottom, L_rows, y_k_expected_columns);
+
+
+	destroyArray(sub_y);
+	destroyArray(sum_top);
+	destroyArray(sum_center);
+	destroyArray(sum_bottom);
 }
 
 /* USER CODE BEGIN 4 */
