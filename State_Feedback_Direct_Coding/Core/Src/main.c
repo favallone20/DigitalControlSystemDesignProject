@@ -39,6 +39,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define WAITING 2 // the number of seconds to wait from one reference change to the next. It also coincides with the number of seconds between one USART send and the next
+#define REF_DIM 8
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -82,7 +83,7 @@ typedef struct circular_buffer {
 	bool writing;  // signals if the buffer is being written
 } circular_buffer;
 
-void cb_init(circular_buffer *cb, size_t capacity, size_t sz) {
+void circularBufferInit(circular_buffer *cb, size_t capacity, size_t sz) {
 	cb->buffer = calloc(capacity, sz);
 	if (cb->buffer == NULL)
 		printf("ALLOCATED NULL\n\r");
@@ -97,12 +98,12 @@ void cb_init(circular_buffer *cb, size_t capacity, size_t sz) {
 
 }
 
-void cb_free(circular_buffer *cb) {
+void circularBufferFree(circular_buffer *cb) {
 	free(cb->buffer);
 	// clear out other fields too, just to be safe
 }
 
-void cb_push_back(circular_buffer *cb, const void *item) {
+void circularBufferPushBack(circular_buffer *cb, const void *item) {
 	if (cb->count == cb->capacity) {
 		printf("ERROR PUSH BACK \n\r");
 		// handle error
@@ -116,7 +117,7 @@ void cb_push_back(circular_buffer *cb, const void *item) {
 	cb->writing = false;
 }
 
-void cb_pop_front(circular_buffer *cb, void *item) {
+void circularBufferPopFront(circular_buffer *cb, void *item) {
 	if (cb->count == 0) {
 		printf("ERROR PUSH BACK \n\r");
 		// handle error
@@ -130,15 +131,16 @@ void cb_pop_front(circular_buffer *cb, void *item) {
 	cb->count--;
 }
 
-circular_buffer myBuff;
+circular_buffer buffer;
 
 /* BEGIN RECORD TYPEDEF*/
 typedef struct record {
 	double current_u; // value of the current controller output
 	double current_y; // value of the current motor output (speed)
-	uint32_t cycleCoreDuration; // time needed to read, compute and actuate
-	uint32_t cycleBeginDelay; // difference between the actual and the expected absolute start time of the cycle
-	uint32_t currentTimestamp; // current timestamp in millis
+	double current_r;
+	uint32_t cycle_core_duration; // time needed to read, compute and actuate
+	uint32_t cycle_begin_delay; // difference between the actual and the expected absolute start time of the cycle
+	uint32_t current_timestamp; // current timestamp in millis
 } record;
 
 /* BEGIN USART WRITE FUNCTION (used by printf)*/
@@ -149,8 +151,7 @@ int _write(int file, char *data, int len) {
 	}
 
 	// arbitrary timeout 1000
-	HAL_StatusTypeDef status = HAL_UART_Transmit(&huart2, (uint8_t*) data, len,
-			1000);
+	HAL_StatusTypeDef status = HAL_UART_Transmit(&huart2, (uint8_t*) data, len, 1000);
 
 	// return # of bytes written - as best we can tell
 	return (status == HAL_OK ? len : 0);
@@ -179,42 +180,43 @@ double getSpeedByDelta(double ticksDelta, double Ts) {
 	return ticksDelta * 60 / (3591.84 * Ts);
 }
 
-double getTicksDelta(double currentTicks, double lastTicks, double Ts) {
+double getTicksDelta(double current_ticks, double last_ticks, double Ts) {
 	double delta;
 
-	if (abs(currentTicks - lastTicks) <= ceil(8400 * Ts))
-		delta = currentTicks - lastTicks;
+	if (abs(current_ticks - last_ticks) <= ceil(8400 * Ts))
+		delta = current_ticks - last_ticks;
 	else {
-		if (lastTicks > currentTicks)
-			delta = currentTicks + pow(2, 16) - 1 - lastTicks;
+		if (last_ticks > current_ticks)
+			delta = current_ticks + pow(2, 16) - 1 - last_ticks;
 		else
-			delta = currentTicks - pow(2, 16) + 1 - lastTicks;
+			delta = current_ticks - pow(2, 16) + 1 - last_ticks;
 	}
 	return delta;
 }
 
-int cycleduration;
-double lastTicks = 0;
-double currentTicks = 0;
-uint32_t ticControlStep;
-uint32_t tocControlStep;
-uint32_t controlComputationDuration;
-double u_last = 0;
-double e_last = 0;
-double z_last = 0;
-double speed_last = 0;
-double u2_last = 0;
+
+double last_ticks = 0;
+double current_ticks = 0;
+uint32_t tic_control_step;
+uint32_t toc_control_step;
+uint32_t control_computation_duration;
+
+uint32_t controller_k = -1;
+int sampling_prescaler = 2;
+int sampling_prescaler_counter = 0;
+
 double Ts = 0.005;
-double referenceVals[8] = { 60.0, 80.0, 100.0, 150.0, -60.0, -80.0, -100.0, 0};
-double referenceVal;
-uint32_t k_controller = -1;
-int samplingPrescaler = 2;
-int samplingPrescalerCounter = 0;
+
+double reference_array[REF_DIM] = { 60.0, 80.0, 100.0, 150.0, -60.0, -80.0, -100.0, 0};
+double reference;
+
+double u = 0;
+
 
 double **Ad;
 double **Bd;
 double **Cd;
-double **state_kplus1;
+double **state_kp1;
 double **state_k;
 double **y_k_expected;
 double **L;
@@ -239,13 +241,13 @@ int y_k_expected_columns = 1;
 int u_rows = 1;
 int u_columns = 1;
 
-
 double kp_1 = 0.0770;
 double kp_2 = -0.0645;
 double ki = 0.0042;
-double y_integrator = 0;
-double y_integrator_last = 0;
-double error_integrator_last = 0;
+double z = 0;
+double z_last = 0;
+double error_last = 0;
+
 
 double** createMatrix(int n, int m) {
 	double *values = (double*) calloc(m * n, sizeof(double));
@@ -256,7 +258,38 @@ double** createMatrix(int n, int m) {
 	return rows;
 }
 
-void multiply_matricies(double **m1, double **m2, int m1_rows, int m1_columns,
+void initMatricies() {
+
+	Ad = createMatrix(Ad_rows, Ad_columns);
+	Ad[0][0] = 0.8645;
+	Ad[0][1] = -0.0565;
+	Ad[1][0] = 1.0;
+	Ad[1][1] = 0.0;
+
+	Bd = createMatrix(Bd_rows, Bd_columns);
+	Bd[0][0] = 1.0;
+	Bd[1][0] = 0.0;
+
+	Cd = createMatrix(Cd_rows, Cd_columns);
+	Cd[0][0] = 1.4424;
+	Cd[0][1] = 0.4751;
+
+	L = createMatrix(L_rows, L_columns);
+	L[0][0] = 0.3789;
+	L[1][0] = 0.4549;
+
+	state_kp1 = createMatrix(state_rows, state_columns);
+	state_k = createMatrix(state_rows, state_columns);
+	y_k_expected = createMatrix(y_k_expected_rows, y_k_expected_columns);
+
+	u_matrix = createMatrix(u_rows, u_columns);
+	sum_center = createMatrix(Bd_rows, u_columns);
+	sub_y = createMatrix(y_k_expected_rows, y_k_expected_columns);
+	sum_top = createMatrix(L_rows, y_k_expected_columns);
+	sum_bottom = createMatrix(Ad_rows, state_columns);
+}
+
+void multiplyMatricies(double **m1, double **m2, int m1_rows, int m1_columns,
 		int m2_rows, int m2_columns, double **m3) {
 
 	for (int i = 0; i < m1_rows; i++) {
@@ -278,42 +311,10 @@ void resetArray(double **arr, int n, int m) {
 	}
 }
 
-void matrix_inizialization() {
-
-	Ad = createMatrix(Ad_rows, Ad_columns);
-	Ad[0][0] = 0.8645;
-	Ad[0][1] = -0.0565;
-	Ad[1][0] = 1.0;
-	Ad[1][1] = 0.0;
-
-	Bd = createMatrix(Bd_rows, Bd_columns);
-	Bd[0][0] = 1.0;
-	Bd[1][0] = 0.0;
-
-	Cd = createMatrix(Cd_rows, Cd_columns);
-	Cd[0][0] = 1.4424;
-	Cd[0][1] = 0.4751;
-
-	L = createMatrix(L_rows, L_columns);
-	L[0][0] = 0.3789;
-	L[1][0] = 0.4549;
-
-	state_kplus1 = createMatrix(state_rows, state_columns);
-	state_k = createMatrix(state_rows, state_columns);
-	y_k_expected = createMatrix(y_k_expected_rows, y_k_expected_columns);
-
-	u_matrix = createMatrix(u_rows, u_columns);
-	sum_center = createMatrix(Bd_rows, u_columns);
-	sub_y = createMatrix(y_k_expected_rows, y_k_expected_columns);
-	sum_top = createMatrix(L_rows, y_k_expected_columns);
-	sum_bottom = createMatrix(Ad_rows, state_columns);
-
-}
-
 /**
  * Return the result in the matrix m1
  */
-void matrix_sum(double **m1, double **m2, double rows, double columns) {
+void sumMatricies(double **m1, double **m2, double rows, double columns) {
 
 	for (int i = 0; i < rows; i++) {
 		for (int j = 0; j < columns; j++) {
@@ -333,13 +334,13 @@ int main(void) {
 	/* USER CODE END 1 */
 	/* MCU Configuration--------------------------------------------------------*/
 
-	matrix_inizialization();
+	initMatricies();
 	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
 	HAL_Init();
 
 	/* USER CODE BEGIN Init */
-	size_t bufferSize = (size_t) ceil(2 * WAITING / (Ts * samplingPrescaler));
-	cb_init(&myBuff, bufferSize, sizeof(record));
+	size_t buffer_size = (size_t) ceil(2 * WAITING / (Ts * sampling_prescaler));
+	circularBufferInit(&buffer, buffer_size, sizeof(record));
 
 	/* USER CODE END Init */
 
@@ -365,28 +366,25 @@ int main(void) {
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
 
+	int reference_index = 0;
+	reference = reference_array[reference_index];
 
-
-	int referenceIndex = 0;
-
-	referenceVal = referenceVals[referenceIndex];
 	printf("INIT\n\r"); // initialize the Matlab tool for COM data acquiring
 
 	while (1) {
-		size_t nEntriesToSend = myBuff.count; //number of samples not read yet
+		size_t n_entries_to_send = buffer.count; //number of samples not read yet
 		record retrieved; //buffer entry
 
-		for (size_t count = 0; count < nEntriesToSend; count++) {
-			cb_pop_front(&myBuff, &retrieved); //take entry from the buffer
-			printf("%lu, %f, %f, %lu\n\r", retrieved.currentTimestamp,
-					retrieved.current_u, retrieved.current_y,
-					retrieved.cycleCoreDuration); // send values via USART using format: value1, value2, value3, ... valuen \n \r
+		for (size_t count = 0; count < n_entries_to_send; count++) {
+			circularBufferPopFront(&buffer, &retrieved); //take entry from the buffer
+			printf("%lu, %f, %f, %f, %lu\n\r", retrieved.current_timestamp,
+					retrieved.current_u, retrieved.current_y, retrieved.current_r,
+					retrieved.cycle_core_duration); // send values via USART using format: value1, value2, value3, ... valuen \n \r
 		}
-		referenceVal = referenceVals[referenceIndex];
-		referenceIndex = referenceIndex + 1;
+
+		reference = reference_array[reference_index];
+		reference_index = (reference_index + 1)%REF_DIM;
 		HAL_Delay(WAITING * 1000); // takes a time value in ms
-		if (referenceIndex > 7)
-			referenceIndex = 0;
 
 		/* USER CODE END WHILE */
 
@@ -640,30 +638,28 @@ static void MX_GPIO_Init(void) {
 
 }
 
-void luenberger_observer(double u_last, double y) {
+void luenbergerObserver(double u_last, double y) {
 
 	for(int i=0; i < state_rows; i++){
 		for(int j =0; j < state_columns; j++){
-			state_k[i][j] = state_kplus1[i][j];
-			state_kplus1[i][j] = 0;
+			state_k[i][j] = state_kp1[i][j];
+			state_kp1[i][j] = 0;
 		}
 	}
 
 	u_matrix[0][0] = u_last;
 
-	multiply_matricies(Bd, u_matrix, Bd_rows, Bd_columns, 1, 1, sum_center);
+	multiplyMatricies(Bd, u_matrix, Bd_rows, Bd_columns, 1, 1, sum_center);
 
-	multiply_matricies(Cd, state_k, Cd_rows, Cd_columns, state_rows, state_columns, y_k_expected);
+	multiplyMatricies(Cd, state_k, Cd_rows, Cd_columns, state_rows, state_columns, y_k_expected);
 	sub_y[0][0] = y - y_k_expected[0][0];
 
-	multiply_matricies(L, sub_y, L_rows, L_columns, y_k_expected_rows, y_k_expected_columns, sum_top);
+	multiplyMatricies(L, sub_y, L_rows, L_columns, y_k_expected_rows, y_k_expected_columns, sum_top);
+	multiplyMatricies(Ad, state_k, Ad_rows, Ad_columns, state_rows, state_columns, sum_bottom);
 
-	multiply_matricies(Ad, state_k, Ad_rows, Ad_columns, state_rows, state_columns, sum_bottom);
-
-	matrix_sum(state_kplus1, sum_top, L_rows, y_k_expected_columns);
-	matrix_sum(state_kplus1, sum_center, L_rows, y_k_expected_columns);
-	matrix_sum(state_kplus1, sum_bottom, L_rows, y_k_expected_columns);
-
+	sumMatricies(state_kp1, sum_top, L_rows, y_k_expected_columns);
+	sumMatricies(state_kp1, sum_center, L_rows, y_k_expected_columns);
+	sumMatricies(state_kp1, sum_bottom, L_rows, y_k_expected_columns);
 
 	resetArray(sub_y, y_k_expected_rows, y_k_expected_columns);
 	resetArray(sum_top, L_rows, y_k_expected_columns);
@@ -673,51 +669,55 @@ void luenberger_observer(double u_last, double y) {
 
 /* USER CODE BEGIN 4 */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-	if (htim == &htim4) {
-		k_controller = k_controller + 1;
-		if (k_controller == 0) {
-			ticControlStep = HAL_GetTick();
-		}
-		tocControlStep = HAL_GetTick();
 
-		currentTicks = (double) __HAL_TIM_GET_COUNTER(&htim1); //take current value of ticks counting the encoder edges
+	if (htim == &htim4) {
+		controller_k = controller_k + 1;
+
+		if (controller_k == 0) {
+			tic_control_step = HAL_GetTick();
+		}
+
+		toc_control_step = HAL_GetTick();
+
+		current_ticks = (double) __HAL_TIM_GET_COUNTER(&htim1); //take current value of ticks counting the encoder edges
 
 		//take the current motor speed
-		double speed = getSpeedByDelta(getTicksDelta(currentTicks, lastTicks, Ts), Ts);
+		double speed = getSpeedByDelta(getTicksDelta(current_ticks, last_ticks, Ts), Ts);
 
 		// state estimation with Luenberger observer, after this function the state_k is updated
-		luenberger_observer(u_last, speed);
+		luenbergerObserver(u, speed);
 
 		// State Feedback --------------------------------------------
-		double error = speed - referenceVal;
-		y_integrator = y_integrator_last - ki*error_integrator_last;
+		double error = speed - reference;
+		z = z_last - ki*error_last;
 
 		double kx = kp_1*state_k[0][0] + kp_2*state_k[1][0];
 
-		double u = y_integrator - kx;
+		double u = z - kx;
 
 		setPulseFromDutyValue(u * 100 / 12);
 
 		//------------------------------------------------------------
 
-		error_integrator_last = error;
-		y_integrator_last = y_integrator;
+		error_last = error;
+		z_last = z;
 
-		controlComputationDuration = HAL_GetTick() - tocControlStep;
-		lastTicks = currentTicks;
-		// recording data in the buffer
+		control_computation_duration = HAL_GetTick() - toc_control_step;
+		last_ticks = current_ticks;
+
 		record r;
 		r.current_u = u;
 		r.current_y = speed;
-		r.cycleCoreDuration = controlComputationDuration;
-		r.cycleBeginDelay = tocControlStep - ticControlStep
-				- (k_controller * Ts * 1000);
-		r.currentTimestamp = HAL_GetTick();
-		if (samplingPrescalerCounter == (samplingPrescaler - 1)) {
-			cb_push_back(&myBuff, &r);
-			samplingPrescalerCounter = -1;
+		r.current_r = reference;
+		r.cycle_core_duration = control_computation_duration;
+		r.cycle_begin_delay = toc_control_step - tic_control_step - (controller_k * Ts * 1000);
+		r.current_timestamp = HAL_GetTick();
+
+		if (sampling_prescaler_counter == (sampling_prescaler - 1)) {
+			circularBufferPushBack(&buffer, &r);
+			sampling_prescaler_counter = -1;
 		}
-		samplingPrescalerCounter++;
+		sampling_prescaler_counter++;
 	}
 }
 /* USER CODE END 4 */
