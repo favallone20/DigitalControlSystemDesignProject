@@ -39,7 +39,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define WAITING 2 // the number of seconds to wait from one reference change to the next. It also coincides with the number of seconds between one USART send and the next
-#define REF_DIM 8
+#define REF_DIM 5
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -176,8 +176,9 @@ void setPulseFromDutyValue(double dutyVal) {
 			(abs(dutyVal) * ((double )htim3.Init.Period)) / 100); //cast integer value to double to correctly perform division between decimal numbers
 }
 
-uint16_t modCounter(uint16_t lastTicks_star, double ticksDelta) {
-	return (uint16_t)(lastTicks_star + ticksDelta)%89796;
+double modCounter(double lastTicks_star, double ticksDelta) {
+	int sum = (int)(lastTicks_star + ticksDelta);
+	return (double)(sum%89796);
 }
 
 double getPosition(double ticksStar) {
@@ -201,8 +202,8 @@ double getTicksDelta(double current_ticks, double last_ticks, double Ts) {
 
 double last_ticks = 0;
 double current_ticks = 0;
-uint16_t ticks_star = 0;
-uint16_t last_ticks_star = 0;
+double ticks_star = 0;
+double last_ticks_star = 0;
 uint32_t tic_control_step;
 uint32_t toc_control_step;
 uint32_t control_computation_duration;
@@ -213,7 +214,7 @@ int sampling_prescaler_counter = 0;
 
 double Ts = 0.005;
 
-double reference_array[REF_DIM] = { 0, M_PI, 2*M_PI, 3*M_PI, 4*M_PI, 3*M_PI, 2*M_PI, M_PI};
+double reference_array[REF_DIM] = {0, -M_PI, M_PI, 2*M_PI, 0};
 double reference;
 
 double u = 0;
@@ -247,9 +248,9 @@ int y_k_expected_columns = 1;
 int u_rows = 1;
 int u_columns = 1;
 
-double kp_1 = 83.3467;
-double kp_2 = 1.4373;
-double ki = 2.6334;
+double kp_1 = 29.4478;
+double kp_2 = 0.6136;
+double ki = 0.5884;
 double z = 0;
 double z_last = 0;
 double error_last = 0;
@@ -281,8 +282,8 @@ void initMatricies() {
 	Cd[0][1] = 0.0;
 
 	L = createMatrix(L_rows, L_columns);
-	L[0][0] = 0.6181;
-	L[1][0] = 0.0054;
+	L[0][0] = 0.9902;
+	L[1][0] = 0.0001;
 
 	state_kp1 = createMatrix(state_rows, state_columns);
 	state_k = createMatrix(state_rows, state_columns);
@@ -720,7 +721,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		r.current_r = reference;
 		r.cycle_core_duration = control_computation_duration;
 		r.cycle_begin_delay = toc_control_step - tic_control_step - (controller_k * Ts * 1000);
-		r.current_timestamp = HAL_GetTick();
+		r.current_timestamp = current_ticks;
 
 		if (sampling_prescaler_counter == (sampling_prescaler - 1)) {
 			circularBufferPushBack(&buffer, &r);
