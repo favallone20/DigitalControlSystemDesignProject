@@ -2106,37 +2106,37 @@ void initMatricies() {
  80015fc:	4603      	mov	r3, r0
  80015fe:	4a7a      	ldr	r2, [pc, #488]	; (80017e8 <initMatricies+0x200>)
  8001600:	6013      	str	r3, [r2, #0]
-	Ad[0][0] = 0.8645;
+	Ad[0][0] = 1.0;
  8001602:	4b79      	ldr	r3, [pc, #484]	; (80017e8 <initMatricies+0x200>)
  8001604:	681b      	ldr	r3, [r3, #0]
  8001606:	6819      	ldr	r1, [r3, #0]
- 8001608:	a369      	add	r3, pc, #420	; (adr r3, 80017b0 <initMatricies+0x1c8>)
- 800160a:	e9d3 2300 	ldrd	r2, r3, [r3]
+ 8001608:	f04f 0200 	mov.w	r2, #0
+ 800160c:	4b77      	ldr	r3, [pc, #476]	; (80017ec <initMatricies+0x204>)
  800160e:	e9c1 2300 	strd	r2, r3, [r1]
-	Ad[0][1] = -0.0565;
+	Ad[0][1] = 0.0046;
  8001612:	4b75      	ldr	r3, [pc, #468]	; (80017e8 <initMatricies+0x200>)
  8001614:	681b      	ldr	r3, [r3, #0]
  8001616:	681b      	ldr	r3, [r3, #0]
  8001618:	f103 0108 	add.w	r1, r3, #8
- 800161c:	a366      	add	r3, pc, #408	; (adr r3, 80017b8 <initMatricies+0x1d0>)
+ 800161c:	a364      	add	r3, pc, #400	; (adr r3, 80017b0 <initMatricies+0x1c8>)
  800161e:	e9d3 2300 	ldrd	r2, r3, [r3]
  8001622:	e9c1 2300 	strd	r2, r3, [r1]
-	Ad[1][0] = 1.0;
+	Ad[1][0] = 0.0;
  8001626:	4b70      	ldr	r3, [pc, #448]	; (80017e8 <initMatricies+0x200>)
  8001628:	681b      	ldr	r3, [r3, #0]
  800162a:	3304      	adds	r3, #4
  800162c:	6819      	ldr	r1, [r3, #0]
  800162e:	f04f 0200 	mov.w	r2, #0
- 8001632:	4b6e      	ldr	r3, [pc, #440]	; (80017ec <initMatricies+0x204>)
- 8001634:	e9c1 2300 	strd	r2, r3, [r1]
-	Ad[1][1] = 0.0;
- 8001638:	4b6b      	ldr	r3, [pc, #428]	; (80017e8 <initMatricies+0x200>)
- 800163a:	681b      	ldr	r3, [r3, #0]
- 800163c:	3304      	adds	r3, #4
- 800163e:	681b      	ldr	r3, [r3, #0]
- 8001640:	f103 0108 	add.w	r1, r3, #8
- 8001644:	f04f 0200 	mov.w	r2, #0
- 8001648:	f04f 0300 	mov.w	r3, #0
+ 8001632:	f04f 0300 	mov.w	r3, #0
+ 8001636:	e9c1 2300 	strd	r2, r3, [r1]
+	Ad[1][1] = 0.8259;
+ 800163a:	4b6b      	ldr	r3, [pc, #428]	; (80017e8 <initMatricies+0x200>)
+ 800163c:	681b      	ldr	r3, [r3, #0]
+ 800163e:	3304      	adds	r3, #4
+ 8001640:	681b      	ldr	r3, [r3, #0]
+ 8001642:	f103 0108 	add.w	r1, r3, #8
+ 8001646:	a35c      	add	r3, pc, #368	; (adr r3, 80017b8 <initMatricies+0x1d0>)
+ 8001648:	e9d3 2300 	ldrd	r2, r3, [r3]
  800164c:	e9c1 2300 	strd	r2, r3, [r1]
 
 	Bd = createMatrix(Bd_rows, Bd_columns);
@@ -2150,47 +2150,47 @@ void initMatricies() {
  8001660:	4603      	mov	r3, r0
  8001662:	4a65      	ldr	r2, [pc, #404]	; (80017f8 <initMatricies+0x210>)
  8001664:	6013      	str	r3, [r2, #0]
-	Bd[0][0] = 1.0;
+	Bd[0][0] = 0.0005;
  8001666:	4b64      	ldr	r3, [pc, #400]	; (80017f8 <initMatricies+0x210>)
  8001668:	681b      	ldr	r3, [r3, #0]
  800166a:	6819      	ldr	r1, [r3, #0]
- 800166c:	f04f 0200 	mov.w	r2, #0
- 8001670:	4b5e      	ldr	r3, [pc, #376]	; (80017ec <initMatricies+0x204>)
+ 800166c:	a354      	add	r3, pc, #336	; (adr r3, 80017c0 <initMatricies+0x1d8>)
+ 800166e:	e9d3 2300 	ldrd	r2, r3, [r3]
  8001672:	e9c1 2300 	strd	r2, r3, [r1]
-	Bd[1][0] = 0.0;
+	Bd[1][0] = 0.2049;
  8001676:	4b60      	ldr	r3, [pc, #384]	; (80017f8 <initMatricies+0x210>)
  8001678:	681b      	ldr	r3, [r3, #0]
  800167a:	3304      	adds	r3, #4
  800167c:	6819      	ldr	r1, [r3, #0]
- 800167e:	f04f 0200 	mov.w	r2, #0
- 8001682:	f04f 0300 	mov.w	r3, #0
- 8001686:	e9c1 2300 	strd	r2, r3, [r1]
+ 800167e:	a352      	add	r3, pc, #328	; (adr r3, 80017c8 <initMatricies+0x1e0>)
+ 8001680:	e9d3 2300 	ldrd	r2, r3, [r3]
+ 8001684:	e9c1 2300 	strd	r2, r3, [r1]
 
 	Cd = createMatrix(Cd_rows, Cd_columns);
- 800168a:	4b5c      	ldr	r3, [pc, #368]	; (80017fc <initMatricies+0x214>)
- 800168c:	681b      	ldr	r3, [r3, #0]
- 800168e:	4a5c      	ldr	r2, [pc, #368]	; (8001800 <initMatricies+0x218>)
- 8001690:	6812      	ldr	r2, [r2, #0]
- 8001692:	4611      	mov	r1, r2
- 8001694:	4618      	mov	r0, r3
- 8001696:	f7ff ff73 	bl	8001580 <createMatrix>
- 800169a:	4603      	mov	r3, r0
- 800169c:	4a59      	ldr	r2, [pc, #356]	; (8001804 <initMatricies+0x21c>)
- 800169e:	6013      	str	r3, [r2, #0]
-	Cd[0][0] = 1.4424;
- 80016a0:	4b58      	ldr	r3, [pc, #352]	; (8001804 <initMatricies+0x21c>)
- 80016a2:	681b      	ldr	r3, [r3, #0]
- 80016a4:	6819      	ldr	r1, [r3, #0]
- 80016a6:	a346      	add	r3, pc, #280	; (adr r3, 80017c0 <initMatricies+0x1d8>)
- 80016a8:	e9d3 2300 	ldrd	r2, r3, [r3]
- 80016ac:	e9c1 2300 	strd	r2, r3, [r1]
-	Cd[0][1] = 0.4751;
- 80016b0:	4b54      	ldr	r3, [pc, #336]	; (8001804 <initMatricies+0x21c>)
+ 8001688:	4b5c      	ldr	r3, [pc, #368]	; (80017fc <initMatricies+0x214>)
+ 800168a:	681b      	ldr	r3, [r3, #0]
+ 800168c:	4a5c      	ldr	r2, [pc, #368]	; (8001800 <initMatricies+0x218>)
+ 800168e:	6812      	ldr	r2, [r2, #0]
+ 8001690:	4611      	mov	r1, r2
+ 8001692:	4618      	mov	r0, r3
+ 8001694:	f7ff ff74 	bl	8001580 <createMatrix>
+ 8001698:	4603      	mov	r3, r0
+ 800169a:	4a5a      	ldr	r2, [pc, #360]	; (8001804 <initMatricies+0x21c>)
+ 800169c:	6013      	str	r3, [r2, #0]
+	Cd[0][0] = 1.0;
+ 800169e:	4b59      	ldr	r3, [pc, #356]	; (8001804 <initMatricies+0x21c>)
+ 80016a0:	681b      	ldr	r3, [r3, #0]
+ 80016a2:	6819      	ldr	r1, [r3, #0]
+ 80016a4:	f04f 0200 	mov.w	r2, #0
+ 80016a8:	4b50      	ldr	r3, [pc, #320]	; (80017ec <initMatricies+0x204>)
+ 80016aa:	e9c1 2300 	strd	r2, r3, [r1]
+	Cd[0][1] = 0.0;
+ 80016ae:	4b55      	ldr	r3, [pc, #340]	; (8001804 <initMatricies+0x21c>)
+ 80016b0:	681b      	ldr	r3, [r3, #0]
  80016b2:	681b      	ldr	r3, [r3, #0]
- 80016b4:	681b      	ldr	r3, [r3, #0]
- 80016b6:	f103 0108 	add.w	r1, r3, #8
- 80016ba:	a343      	add	r3, pc, #268	; (adr r3, 80017c8 <initMatricies+0x1e0>)
- 80016bc:	e9d3 2300 	ldrd	r2, r3, [r3]
+ 80016b4:	f103 0108 	add.w	r1, r3, #8
+ 80016b8:	f04f 0200 	mov.w	r2, #0
+ 80016bc:	f04f 0300 	mov.w	r3, #0
  80016c0:	e9c1 2300 	strd	r2, r3, [r1]
 
 	L = createMatrix(L_rows, L_columns);
@@ -2204,14 +2204,14 @@ void initMatricies() {
  80016d4:	4603      	mov	r3, r0
  80016d6:	4a4e      	ldr	r2, [pc, #312]	; (8001810 <initMatricies+0x228>)
  80016d8:	6013      	str	r3, [r2, #0]
-	L[0][0] = 0.3789;
+	L[0][0] = 0.6181;
  80016da:	4b4d      	ldr	r3, [pc, #308]	; (8001810 <initMatricies+0x228>)
  80016dc:	681b      	ldr	r3, [r3, #0]
  80016de:	6819      	ldr	r1, [r3, #0]
  80016e0:	a33b      	add	r3, pc, #236	; (adr r3, 80017d0 <initMatricies+0x1e8>)
  80016e2:	e9d3 2300 	ldrd	r2, r3, [r3]
  80016e6:	e9c1 2300 	strd	r2, r3, [r1]
-	L[1][0] = 0.4549;
+	L[1][0] = 0.0054;
  80016ea:	4b49      	ldr	r3, [pc, #292]	; (8001810 <initMatricies+0x228>)
  80016ec:	681b      	ldr	r3, [r3, #0]
  80016ee:	3304      	adds	r3, #4
@@ -2312,18 +2312,18 @@ void initMatricies() {
 }
  80017ac:	bf00      	nop
  80017ae:	bd80      	pop	{r7, pc}
- 80017b0:	e76c8b44 	.word	0xe76c8b44
- 80017b4:	3feba9fb 	.word	0x3feba9fb
- 80017b8:	6872b021 	.word	0x6872b021
- 80017bc:	bfaced91 	.word	0xbfaced91
- 80017c0:	05bc01a3 	.word	0x05bc01a3
- 80017c4:	3ff71412 	.word	0x3ff71412
- 80017c8:	d495182b 	.word	0xd495182b
- 80017cc:	3fde6809 	.word	0x3fde6809
- 80017d0:	c91d14e4 	.word	0xc91d14e4
- 80017d4:	3fd83fe5 	.word	0x3fd83fe5
- 80017d8:	e3bcd35b 	.word	0xe3bcd35b
- 80017dc:	3fdd1d14 	.word	0x3fdd1d14
+ 80017b0:	18fc5048 	.word	0x18fc5048
+ 80017b4:	3f72d773 	.word	0x3f72d773
+ 80017b8:	d6388659 	.word	0xd6388659
+ 80017bc:	3fea6dc5 	.word	0x3fea6dc5
+ 80017c0:	d2f1a9fc 	.word	0xd2f1a9fc
+ 80017c4:	3f40624d 	.word	0x3f40624d
+ 80017c8:	c779a6b5 	.word	0xc779a6b5
+ 80017cc:	3fca3a29 	.word	0x3fca3a29
+ 80017d0:	a6b50b0f 	.word	0xa6b50b0f
+ 80017d4:	3fe3c779 	.word	0x3fe3c779
+ 80017d8:	765fd8ae 	.word	0x765fd8ae
+ 80017dc:	3f761e4f 	.word	0x3f761e4f
  80017e0:	20000050 	.word	0x20000050
  80017e4:	20000054 	.word	0x20000054
  80017e8:	20000410 	.word	0x20000410

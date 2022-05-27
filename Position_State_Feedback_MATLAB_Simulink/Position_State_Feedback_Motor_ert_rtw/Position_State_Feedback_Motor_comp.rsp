@@ -1,0 +1,43 @@
+-IC:/Users/UTENTE/Digital_Control_Systems_Design/DigitalControlSystemDesignProject/Position_State_Feedback_MATLAB_Simulink/slprj/ert/Controller_Observer_Model
+-IC:/Users/UTENTE/Digital_Control_Systems_Design/DigitalControlSystemDesignProject/Position_State_Feedback_MATLAB_Simulink
+-IC:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/shared/svd/include
+-IC:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/mbed/include
+-IC:/Users/UTENTE/Digital_Control_Systems_Design/Lezione2/quadratureEncoder_module/include
+-IC:/Users/UTENTE/Digital_Control_Systems_Design/DigitalControlSystemDesignProject/Position_State_Feedback_MATLAB_Simulink/Position_State_Feedback_Motor_ert_rtw
+-IC:/Program\ Files/MATLAB/R2021b/extern/include
+-IC:/Program\ Files/MATLAB/R2021b/simulink/include
+-IC:/Program\ Files/MATLAB/R2021b/rtw/c/src
+-IC:/Program\ Files/MATLAB/R2021b/rtw/c/src/ext_mode/common
+-IC:/Program\ Files/MATLAB/R2021b/rtw/c/ert
+-IC:/Program\ Files/MATLAB/R2021b/toolbox/coder/xcp/src/target/slave/include
+-IC:/Program\ Files/MATLAB/R2021b/toolbox/coder/xcp/src/target/slave/common
+-IC:/Program\ Files/MATLAB/R2021b/toolbox/coder/xcp/src/target/slave/protocol/src
+-IC:/Program\ Files/MATLAB/R2021b/toolbox/coder/xcp/src/target/slave/protocol/include
+-IC:/Program\ Files/MATLAB/R2021b/toolbox/coder/xcp/src/target/slave/transport/include
+-IC:/Program\ Files/MATLAB/R2021b/toolbox/coder/xcp/src/target/slave/transport/src
+-IC:/Program\ Files/MATLAB/R2021b/toolbox/coder/xcp/src/target/slave/platform/include
+-IC:/Program\ Files/MATLAB/R2021b/toolbox/coder/xcp/src/target/slave/platform/default
+-IC:/Program\ Files/MATLAB/R2021b/toolbox/coder/xcp/src/target/ext_mode/include
+-IC:/Program\ Files/MATLAB/R2021b/toolbox/coder/xcp/src/target/ext_mode/src
+-IC:/Program\ Files/MATLAB/R2021b/rtw/c/ext_mode/common
+-IC:/Program\ Files/MATLAB/R2021b/toolbox/coder/rtiostream/src
+-IC:/Users/UTENTE/Digital_Control_Systems_Design/DigitalControlSystemDesignProject/Position_State_Feedback_MATLAB_Simulink/slprj/ert/_sharedutils
+-IC:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/armcortexmbase/scheduler/include
+-IC:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/armcortexmbase/xcp/include
+-IC:/ProgramData/MATLAB/SupportPackages/R2021b/3P.instrset/cmsis.instrset/CMSIS/Include
+-IC:/Program\ Files/MATLAB/R2021b/rtw/c/src/ext_mode/serial
+-IC:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/stmmbed/mbed
+-IC:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/stmmbed/mbed/drivers
+-IC:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/stmmbed/mbed/hal
+-IC:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/stmmbed/mbed/hal/storage_abstraction
+-IC:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/stmmbed/mbed/platform
+-IC:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/stmmbed/mbed/platform/cxxsupport
+-IC:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/stmnucleo/mbed/NUCLEO_F401RE
+-IC:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/stmnucleo/mbed/NUCLEO_F401RE/TARGET_STM
+-IC:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/stmnucleo/mbed/NUCLEO_F401RE/TARGET_STM/TARGET_STM32F4
+-IC:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/stmnucleo/mbed/NUCLEO_F401RE/TARGET_STM/TARGET_STM32F4/device
+-IC:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/stmnucleo/mbed/NUCLEO_F401RE/TARGET_STM/TARGET_STM32F4/TARGET_STM32F401xE
+-IC:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/stmnucleo/mbed/NUCLEO_F401RE/TARGET_STM/TARGET_STM32F4/TARGET_STM32F401xE/TARGET_NUCLEO_F401RE
+-IC:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/stmnucleo/mbed/NUCLEO_F401RE/TARGET_STM/TARGET_STM32F4/TARGET_STM32F401xE/device
+-IC:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/stmnucleo/include
+-IC:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/stmnucleo/STM32F401RE/include

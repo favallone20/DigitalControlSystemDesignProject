@@ -247,9 +247,9 @@ int y_k_expected_columns = 1;
 int u_rows = 1;
 int u_columns = 1;
 
-double kp_1 = 0.0770;
-double kp_2 = -0.0645;
-double ki = 0.0042;
+double kp_1 = 83.3467;
+double kp_2 = 1.4373;
+double ki = 2.6334;
 double z = 0;
 double z_last = 0;
 double error_last = 0;
@@ -267,22 +267,22 @@ double** createMatrix(int n, int m) {
 void initMatricies() {
 
 	Ad = createMatrix(Ad_rows, Ad_columns);
-	Ad[0][0] = 0.8645;
-	Ad[0][1] = -0.0565;
-	Ad[1][0] = 1.0;
-	Ad[1][1] = 0.0;
+	Ad[0][0] = 1.0;
+	Ad[0][1] = 0.0046;
+	Ad[1][0] = 0.0;
+	Ad[1][1] = 0.8259;
 
 	Bd = createMatrix(Bd_rows, Bd_columns);
-	Bd[0][0] = 1.0;
-	Bd[1][0] = 0.0;
+	Bd[0][0] = 0.0005;
+	Bd[1][0] = 0.2049;
 
 	Cd = createMatrix(Cd_rows, Cd_columns);
-	Cd[0][0] = 1.4424;
-	Cd[0][1] = 0.4751;
+	Cd[0][0] = 1.0;
+	Cd[0][1] = 0.0;
 
 	L = createMatrix(L_rows, L_columns);
-	L[0][0] = 0.3789;
-	L[1][0] = 0.4549;
+	L[0][0] = 0.6181;
+	L[1][0] = 0.0054;
 
 	state_kp1 = createMatrix(state_rows, state_columns);
 	state_k = createMatrix(state_rows, state_columns);
