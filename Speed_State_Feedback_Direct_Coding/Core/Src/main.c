@@ -39,7 +39,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define WAITING 2 // the number of seconds to wait from one reference change to the next. It also coincides with the number of seconds between one USART send and the next
-#define REF_DIM 8
+#define REF_DIM 6
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -207,7 +207,7 @@ int sampling_prescaler_counter = 0;
 
 double Ts = 0.005;
 
-double reference_array[REF_DIM] = { 60.0, 80.0, 100.0, 125.0, -60.0, -80.0, -100.0, 0};
+double reference_array[REF_DIM] = { 60.0, 80.0, 125.0, 0, -80.0, -125.0};
 double reference;
 
 double u = 0;

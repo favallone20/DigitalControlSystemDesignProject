@@ -721,7 +721,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		r.current_r = reference;
 		r.cycle_core_duration = control_computation_duration;
 		r.cycle_begin_delay = toc_control_step - tic_control_step - (controller_k * Ts * 1000);
-		r.current_timestamp = current_ticks;
+		r.current_timestamp = HAL_GetTick();
 
 		if (sampling_prescaler_counter == (sampling_prescaler - 1)) {
 			circularBufferPushBack(&buffer, &r);
