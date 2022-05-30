@@ -38,8 +38,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define WAITING 2 // the number of seconds to wait from one reference change to the next. It also coincides with the number of seconds between one USART send and the next
-#define REF_DIM 6
+#define WAITING 2 // Secondi da attendere tra un cambio di riferimento e l'altro. Tale tempo coincide anche con il numero di secondi tra un invio USART e l'altro.
+#define REF_DIM 6 // Dimensione del buffer dei riferimenti.
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -73,21 +73,21 @@ static void MX_TIM4_Init(void);
 /* USER CODE BEGIN 0 */
 /* BEGIN CIRCULAR DATA BUFFER */
 typedef struct circular_buffer {
-	void *buffer;     // data buffer
-	void *buffer_end; // end of data buffer
-	size_t capacity;  // maximum number of items in the buffer
-	size_t count;     // number of items in the buffer
-	size_t sz;        // size of each item in the buffer
-	void *head;       // pointer to head
-	void *tail;       // pointer to tail
-	bool writing;  // signals if the buffer is being written
+	void *buffer;     // Buffer dei dati.
+	void *buffer_end; // Fine del buffer dei dati.
+	size_t capacity;  // Massimo numero di elementi nel buffer.
+	size_t count;     // Numero di elementi nel buffer.
+	size_t sz;        // Dimensione di ogni elemento del buffer.
+	void *head;       // Puntatore alla testa.
+	void *tail;       // Puntatore alla coda.
+	bool writing;  	// Segnale che indica se si sta scrivendo o meno nel buffer.
 } circular_buffer;
 
 void circularBufferInit(circular_buffer *cb, size_t capacity, size_t sz) {
 	cb->buffer = calloc(capacity, sz);
 	if (cb->buffer == NULL)
 		printf("ALLOCATED NULL\n\r");
-	// handle error
+
 	cb->buffer_end = (char*) cb->buffer + capacity * sz;
 	cb->capacity = capacity;
 	cb->count = 0;
@@ -100,13 +100,11 @@ void circularBufferInit(circular_buffer *cb, size_t capacity, size_t sz) {
 
 void circularBufferFree(circular_buffer *cb) {
 	free(cb->buffer);
-	// clear out other fields too, just to be safe
 }
 
 void circularBufferPushBack(circular_buffer *cb, const void *item) {
 	if (cb->count == cb->capacity) {
 		printf("ERROR PUSH BACK \n\r");
-		// handle error
 	}
 	cb->writing = true;
 	memmove(cb->head, item, cb->sz);
@@ -120,7 +118,6 @@ void circularBufferPushBack(circular_buffer *cb, const void *item) {
 void circularBufferPopFront(circular_buffer *cb, void *item) {
 	if (cb->count == 0) {
 		printf("ERROR PUSH BACK \n\r");
-		// handle error
 	}
 	memmove(item, cb->tail, cb->sz);
 	cb->tail = (char*) cb->tail + cb->sz;
@@ -135,12 +132,12 @@ circular_buffer buffer;
 
 /* BEGIN RECORD TYPEDEF*/
 typedef struct record {
-	double current_u; // value of the current controller output
-	double current_y; // value of the current motor output (speed)
-	double current_r;
-	uint32_t cycle_core_duration; // time needed to read, compute and actuate
-	uint32_t cycle_begin_delay; // difference between the actual and the expected absolute start time of the cycle
-	uint32_t current_timestamp; // current timestamp in millis
+	double current_u; // Valore dell'input di controllo attuale.
+	double current_y; // Valore dell'uscita del motore attuale.
+	double current_r; // Valore del riferimento attuale.
+	uint32_t cycle_core_duration; // Tempo necessario per leggere, computare e attuare.
+	uint32_t cycle_begin_delay; // Differenza tra il tempo attuale e il tempo atteso di inizio del ciclo.
+	uint32_t current_timestamp; // Timestamp corrente in millisecondi.
 } record;
 
 /* BEGIN USART WRITE FUNCTION (used by printf)*/
@@ -150,15 +147,13 @@ int _write(int file, char *data, int len) {
 		return -1;
 	}
 
-	// arbitrary timeout 1000
 	HAL_StatusTypeDef status = HAL_UART_Transmit(&huart2, (uint8_t*) data, len, 1000);
 
-	// return # of bytes written - as best we can tell
 	return (status == HAL_OK ? len : 0);
 }
 
 void setPulseFromDutyValue(double dutyVal) {
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET); // enable the motor driver
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
 
 	uint16_t channelToModulate;
 	uint16_t channelToStop;
@@ -173,13 +168,30 @@ void setPulseFromDutyValue(double dutyVal) {
 
 	__HAL_TIM_SET_COMPARE(&htim3, channelToStop, 0);
 	__HAL_TIM_SET_COMPARE(&htim3, channelToModulate,
-			(abs(dutyVal) * ((double )htim3.Init.Period)) / 100); //cast integer value to double to correctly perform division between decimal numbers
+			(abs(dutyVal) * ((double )htim3.Init.Period)) / 100);
 }
 
+/**
+ * @brief Calcola la velocita' del motore a partire dalla variazione dei ticks generati dall'encoder nell'ultimo intervallo di campionamento.
+ *
+ * @param ticksDelta Variazione di ticks.
+ * @param Ts Tempo di campionamento.
+ *
+ * @return La velocita' attuale del motore.
+ **/
 double getSpeedByDelta(double ticksDelta, double Ts) {
 	return ticksDelta * 60 / (3591.84 * Ts);
 }
 
+/**
+ * @brief Calcola la variazione dei ticks generati dall'encoder nell'ultimo intervallo di campionamento.
+ *
+ * @param current_ticks Conteggio attuale di ticks.
+ * @param last_ticks Conteggio passato di ticks.
+ * @param Ts Tempo di campionamento.
+ *
+ * @return Variazione dei ticks.
+ **/
 double getTicksDelta(double current_ticks, double last_ticks, double Ts) {
 	double delta;
 
@@ -205,13 +217,12 @@ uint32_t controller_k = -1;
 int sampling_prescaler = 2;
 int sampling_prescaler_counter = 0;
 
-double Ts = 0.005;
+double Ts = 0.005; // Tempo di campionamento
 
-double reference_array[REF_DIM] = { 60.0, 80.0, 125.0, 0, -80.0, -125.0};
+double reference_array[REF_DIM] = { 60.0, 80.0, 125.0, 0, -80.0, -125.0}; // Buffer dei riferimenti
 double reference;
 
 double u = 0;
-
 
 double **Ad;
 double **Bd;
@@ -248,7 +259,14 @@ double z = 0;
 double z_last = 0;
 double error_last = 0;
 
-
+/**
+ * @brief Crea e restituisce una matrice di dimensione nXm.
+ *
+ * @param n Numero di righe della matrice.
+ * @param m Numero di colonne della matrice.
+ *
+ * @return La matrice creata.
+ **/
 double** createMatrix(int n, int m) {
 	double *values = (double*) calloc(m * n, sizeof(double));
 	double **rows = (double**) malloc(n * sizeof(double*));
@@ -258,6 +276,9 @@ double** createMatrix(int n, int m) {
 	return rows;
 }
 
+/**
+ * @brief Inizializza le matrici del modello e le matrici degli stati attuali e futuri. 
+ **/
 void initMatricies() {
 
 	Ad = createMatrix(Ad_rows, Ad_columns);
@@ -289,6 +310,17 @@ void initMatricies() {
 	sum_bottom = createMatrix(Ad_rows, state_columns);
 }
 
+/**
+ * @brief Effettua la moltiplicazione righe per colonne tra due matrici.
+ *
+ * @param m1 La prima matrice.
+ * @param m2 La seconda matrice.
+ * @param m1_rows Numero di righe della prima matrice.
+ * @param m1_columns Numero di righe della prima matrice.
+ * @param m2_rows Numero di righe della seconda matrice.
+ * @param m2_columns Numero di righe della seconda matrice.
+ * @param m3 La matrice che conterra' il prodotto.
+ **/
 void multiplyMatricies(double **m1, double **m2, int m1_rows, int m1_columns,
 		int m2_rows, int m2_columns, double **m3) {
 
@@ -302,6 +334,14 @@ void multiplyMatricies(double **m1, double **m2, int m1_rows, int m1_columns,
 	}
 }
 
+/**
+ * @brief Setta tutti gli elementi di una matrice a zero.
+ *
+ * @param arr Matrice da azzerare.
+ * @param n Numero di righe della matrice.
+ * @param m Numero di colonne della matrice.
+ *
+ **/
 void resetArray(double **arr, int n, int m) {
 
 	for (int i = 0; i < n; i++) {
@@ -312,8 +352,13 @@ void resetArray(double **arr, int n, int m) {
 }
 
 /**
- * Return the result in the matrix m1
- */
+ * @brief Effettua la somma tra due matrici. Il risultato sara' contenuto nella prima.
+ *
+ * @param m1 La prima matrice.
+ * @param m2 La seconda matrice.
+ * @param rows Numero di righe delle matrici.
+ * @param columns Numero di righe delle matrici.
+ **/
 void sumMatricies(double **m1, double **m2, double rows, double columns) {
 
 	for (int i = 0; i < rows; i++) {
@@ -369,22 +414,24 @@ int main(void) {
 	int reference_index = 0;
 	reference = reference_array[reference_index];
 
-	printf("INIT\n\r"); // initialize the Matlab tool for COM data acquiring
+	printf("INIT\n\r");
 
 	while (1) {
-		size_t n_entries_to_send = buffer.count; //number of samples not read yet
+		size_t n_entries_to_send = buffer.count; // Numero di campioni non ancora letti
 		record retrieved; //buffer entry
 
+		// Invio dei dati mediante USART
 		for (size_t count = 0; count < n_entries_to_send; count++) {
-			circularBufferPopFront(&buffer, &retrieved); //take entry from the buffer
+			circularBufferPopFront(&buffer, &retrieved); // Prende le entry dal buffer
 			printf("%lu, %f, %f, %f, %lu\n\r", retrieved.current_timestamp,
 					retrieved.current_u, retrieved.current_y, retrieved.current_r,
-					retrieved.cycle_core_duration); // send values via USART using format: value1, value2, value3, ... valuen \n \r
+					retrieved.cycle_core_duration);
 		}
 
+		// Cambio del riferimento
 		reference = reference_array[reference_index];
 		reference_index = (reference_index + 1)%REF_DIM;
-		HAL_Delay(WAITING * 1000); // takes a time value in ms
+		HAL_Delay(WAITING * 1000);
 
 		/* USER CODE END WHILE */
 
@@ -638,8 +685,15 @@ static void MX_GPIO_Init(void) {
 
 }
 
+/**
+ * @brief Implementa l'osservatore di Luenberger.
+ *
+ * @param u_last Valore dell'ingresso di controllo attuale.
+ * @param y Valore attuale dell'uscita del sistema.
+ **/
 void luenbergerObserver(double u_last, double y) {
 
+	// Assegna lo stato futuro computato precedentemente allo stato attuale e azzera il futuro.
 	for(int i=0; i < state_rows; i++){
 		for(int j =0; j < state_columns; j++){
 			state_k[i][j] = state_kp1[i][j];
@@ -649,14 +703,22 @@ void luenbergerObserver(double u_last, double y) {
 
 	u_matrix[0][0] = u_last;
 
+	// Moltiplicazione tra la matrice B e l'ingresso di controllo.
 	multiplyMatricies(Bd, u_matrix, Bd_rows, Bd_columns, 1, 1, sum_center);
 
+	// Moltiplicazione tra lo stato stimato e la matrice C.
 	multiplyMatricies(Cd, state_k, Cd_rows, Cd_columns, state_rows, state_columns, y_k_expected);
+
+	// Calcolo errore tra uscita stimata e uscita effettiva.
 	sub_y[0][0] = y - y_k_expected[0][0];
 
+	// Moltiplicazione dell'errore tra uscita stimata e uscita effettiva e la matrice L.
 	multiplyMatricies(L, sub_y, L_rows, L_columns, y_k_expected_rows, y_k_expected_columns, sum_top);
+
+	// Moltiplicazione tra stato stimato e matrice A.
 	multiplyMatricies(Ad, state_k, Ad_rows, Ad_columns, state_rows, state_columns, sum_bottom);
 
+	// Somma di tutti i contributi.
 	sumMatricies(state_kp1, sum_top, L_rows, y_k_expected_columns);
 	sumMatricies(state_kp1, sum_center, L_rows, y_k_expected_columns);
 	sumMatricies(state_kp1, sum_bottom, L_rows, y_k_expected_columns);
@@ -679,15 +741,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
 		toc_control_step = HAL_GetTick();
 
-		current_ticks = (double) __HAL_TIM_GET_COUNTER(&htim1); //take current value of ticks counting the encoder edges
+		// Prende il valore attuale dei tick contando i fronti dell'encoder.
+		current_ticks = (double) __HAL_TIM_GET_COUNTER(&htim1);
 
-		//take the current motor speed
+		// Calcola la velocita' attuale del motore.
 		double speed = getSpeedByDelta(getTicksDelta(current_ticks, last_ticks, Ts), Ts);
 
-		// state estimation with Luenberger observer, after this function the state_k is updated
+		//Stima dello stato con l'osservatore di Luenberger. Dopo tale chiamata lo stato viene aggiornato con la nuova stima.
 		luenbergerObserver(u, speed);
 
-		// State Feedback --------------------------------------------
+		//* Retroazione di stato *//
 		double error = speed - reference;
 		z = z_last - ki*error_last;
 
@@ -695,9 +758,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
 		double u = z - kx;
 
+		// Attuazione
 		setPulseFromDutyValue(u * 100 / 12);
 
-		//------------------------------------------------------------
+		//* ---------------------- *//
 
 		error_last = error;
 		z_last = z;
