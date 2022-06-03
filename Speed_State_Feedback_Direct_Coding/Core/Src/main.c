@@ -38,8 +38,15 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define WAITING 2 // Secondi da attendere tra un cambio di riferimento e l'altro. Tale tempo coincide anche con il numero di secondi tra un invio USART e l'altro.
-#define REF_DIM 6 // Dimensione del buffer dei riferimenti.
+
+/*
+Secondi da attendere tra un cambio di riferimento e l'altro. Tale tempo coincide
+anche con il numero di secondi tra un invio USART e l'altro.
+*/
+#define WAITING 2 
+
+// Dimensione del buffer dei riferimenti.
+#define REF_DIM 6 
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -135,8 +142,10 @@ typedef struct record {
 	double current_u; // Valore dell'input di controllo attuale.
 	double current_y; // Valore dell'uscita del motore attuale.
 	double current_r; // Valore del riferimento attuale.
-	uint32_t cycle_core_duration; // Tempo necessario per leggere, computare e attuare.
-	uint32_t cycle_begin_delay; // Differenza tra il tempo attuale e il tempo atteso di inizio del ciclo.
+	uint32_t cycle_core_duration; // Tempo necessario per leggere, 
+								// computare e attuare.
+	uint32_t cycle_begin_delay; // Differenza tra il tempo attuale e il tempo 
+								// atteso di inizio del ciclo.
 	uint32_t current_timestamp; // Timestamp corrente in millisecondi.
 } record;
 
@@ -172,7 +181,8 @@ void setPulseFromDutyValue(double dutyVal) {
 }
 
 /**
- * @brief Calcola la velocita' del motore a partire dalla variazione dei ticks generati dall'encoder nell'ultimo intervallo di campionamento.
+ * @brief Calcola la velocita' del motore a partire dalla variazione dei ticks 
+ * generati dall'encoder nell'ultimo intervallo di campionamento.
  *
  * @param ticksDelta Variazione di ticks.
  * @param Ts Tempo di campionamento.
@@ -184,7 +194,8 @@ double getSpeedByDelta(double ticksDelta, double Ts) {
 }
 
 /**
- * @brief Calcola la variazione dei ticks generati dall'encoder nell'ultimo intervallo di campionamento.
+ * @brief Calcola la variazione dei ticks generati dall'encoder nell'ultimo 
+ * intervallo di campionamento.
  *
  * @param current_ticks Conteggio attuale di ticks.
  * @param last_ticks Conteggio passato di ticks.
@@ -219,7 +230,8 @@ int sampling_prescaler_counter = 0;
 
 double Ts = 0.005; // Tempo di campionamento
 
-double reference_array[REF_DIM] = { 60.0, 80.0, 125.0, 0, -80.0, -125.0}; // Buffer dei riferimenti
+// Buffer dei riferimenti
+double reference_array[REF_DIM] = { 60.0, 80.0, 125.0, 0, -80.0, -125.0}; 
 double reference;
 
 double u = 0;
@@ -277,7 +289,8 @@ double** createMatrix(int n, int m) {
 }
 
 /**
- * @brief Inizializza le matrici del modello e le matrici degli stati attuali e futuri. 
+ * @brief Inizializza le matrici del modello e le matrici degli stati attuali e 
+ * futuri. 
  **/
 void initMatricies() {
 
@@ -352,7 +365,8 @@ void resetArray(double **arr, int n, int m) {
 }
 
 /**
- * @brief Effettua la somma tra due matrici. Il risultato sara' contenuto nella prima.
+ * @brief Effettua la somma tra due matrici. Il risultato sara' contenuto nella 
+ * prima.
  *
  * @param m1 La prima matrice.
  * @param m2 La seconda matrice.
@@ -417,12 +431,14 @@ int main(void) {
 	printf("INIT\n\r");
 
 	while (1) {
-		size_t n_entries_to_send = buffer.count; // Numero di campioni non ancora letti
+		// Numero di campioni non ancora letti
+		size_t n_entries_to_send = buffer.count; 
 		record retrieved; //buffer entry
 
 		// Invio dei dati mediante USART
 		for (size_t count = 0; count < n_entries_to_send; count++) {
-			circularBufferPopFront(&buffer, &retrieved); // Prende le entry dal buffer
+			// Prende le entry dal buffer
+			circularBufferPopFront(&buffer, &retrieved); 
 			printf("%lu, %f, %f, %f, %lu\n\r", retrieved.current_timestamp,
 					retrieved.current_u, retrieved.current_y, retrieved.current_r,
 					retrieved.cycle_core_duration);
@@ -693,7 +709,8 @@ static void MX_GPIO_Init(void) {
  **/
 void luenbergerObserver(double u_last, double y) {
 
-	// Assegna lo stato futuro computato precedentemente allo stato attuale e azzera il futuro.
+	// Assegna lo stato futuro computato precedentemente allo stato attuale e 
+	// azzera il futuro.
 	for(int i=0; i < state_rows; i++){
 		for(int j =0; j < state_columns; j++){
 			state_k[i][j] = state_kp1[i][j];
@@ -747,7 +764,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		// Calcola la velocita' attuale del motore.
 		double speed = getSpeedByDelta(getTicksDelta(current_ticks, last_ticks, Ts), Ts);
 
-		//Stima dello stato con l'osservatore di Luenberger. Dopo tale chiamata lo stato viene aggiornato con la nuova stima.
+		// Stima dello stato con l'osservatore di Luenberger. 
+		// Dopo tale chiamata lo stato viene aggiornato con la nuova stima.
 		luenbergerObserver(u, speed);
 
 		//* Retroazione di stato *//

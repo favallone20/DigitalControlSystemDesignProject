@@ -60,6 +60,9 @@ Lo script principale (`Position_State_Feedback.mlx`/`Speed_State_Feedback.mlx`),
 Run
 ```
 è stato implementato in maniera tale da poter aprire gli schemi Simulink in maniera automatica ed effettuare la simulazione MIL e mostrarne i risultati senza che l'utente faccia nient'altro. Per quanto riguarda tutte le altre simulazioni, una volta che gli schemi verranno aperti in maniera automatica dallo script, sarà compito dell'utente avviare la simulazione SIL/PIL e l'esecuzione sul motore.
+
+**Attenzione**
+Per l'esecuzione delle simulazioni SIL, PIL e del codice sul motore modificare opportunamente la porta COM impostata sugli schemi.
 ***
 
 ### Note
@@ -68,5 +71,5 @@ Run
 
     * MATLAB  Version 9.11 (R2021b);
     * Simulink Version 10.4 (R2021b).
-
+2. La versione di STM32CubeIde utilizzata è la 1.8.0.
 
