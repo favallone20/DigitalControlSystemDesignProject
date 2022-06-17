@@ -9,5 +9,4 @@
 *.run.xml
 *.gz
 *.toc
-/imgs
 /.vscode
