@@ -95,8 +95,10 @@ angular position $\theta$ and the angular velocity $\omega$:
 
 \begin{equation}
 	\begin{split}
-		&\mtrx{\dot{\theta}\\ \dot{\omega}}= \mtrx{0 & 1\\ 0 & -\dfrac{1}{\tau_m}}\mtrx{\theta\\ \omega} + \mtrx{0\\ \dfrac{k_m}{\tau_m}}v\\
-		&y = \mtrx{1 & 0}\mtrx{\theta\\ \omega}
+		&\mtrx{\dot{\theta}\\ \dot{\omega}}= \mtrx{0 & 1\\ 0 
+		& -\dfrac{1}{\tau_m}}\mtrx{\theta\\ \omega} + \mtrx{0\\ 
+		\dfrac{k_m}{\tau_m}}v\\ &y = \mtrx{1 & 0}\mtrx{\theta\\ 
+		\omega}
 	\end{split}
 \end{equation}
 The control input is the tension applied to the motor $v$ 
@@ -127,40 +129,67 @@ possible to obtain the following state space model:
 	\end{split}
 \end{equation}
 
-\subsection{Modello matematico per controllo in velocità}
-Analogamente, applicando la trasformata di Laplace alle equazioni del motore e moltiplicando per $60/2\pi$, è stata ottenuta la funzione di trasferimento del motore DC, in cui l'ingresso di controllo è la tensione fornita al motore $v$ e l'uscita è la velocità angolare $\omega$, espressa in RPM:
+\subsection{Mathematical model for the velocity controller}
+In the same way, applying the Laplace trasformation and multiplying 
+for $60/2\pi$, it has been obtained the transfer function of the DC
+motor. The control input is the tension $v$ and the ouput is the 
+angular velocity $\omega$ in RPM.
 
 \begin{equation}
-	G(s) = \frac{\omega(s)}{v(s)} = \frac{9.5493k}{(sL + R)(sI + b) + k^2}
+	G(s) = \frac{\omega(s)}{v(s)} = \frac{9.5493k}
+	{(sL + R)(sI + b) + k^2}
 \end{equation}
-Considerando i parametri del motore in dotazione in tabella \ref{tab:motor_parameters}, si ottiene la seguente funzione di trasferimento:
+Considering the DC motor parameters in Table 
+\ref{tab:motor_parameters}, it is possible to obtain the relative
+transfer function:
 
 \begin{equation}
 	G(s) = \frac{\omega(s)}{v(s)} = \frac{167773.98}{s^2 + 392.96s + 15992.15}
 \end{equation}
 
 \section{Tecniche di controllo}
-Per entrambi gli approcci di controllo (posizione e velocità) è stata utilizzata la tecnica della \textit{retroazione di stato}. Il punto di partenza per l'applicazione di tale tecnica è l'ottenimento di una rappresentazione nello spazio di stato. Per il caso del controllo in posizione il modello di partenza già rispettava tale requisito, mentre per il controllo in velocità è stato necessario effettuare la realizzazione della funzione di trasferimento.\bigskip
+For both control approaches (position and speed) the state feedback 
+technique has been used. The starting point for the application of 
+this technique is the obtaining of a representation in the state 
+space. In the case of the control in position the starting model 
+already met this requirement, while for the speed control it was 
+necessary to carry out the transfer function. \bigskip
 
-Ottenute entrambe le rappresentazioni nello spazio di stato, il primo passo effettuato è stato quello di verificarne la raggiungibilità e l'osservabilità. Accertatosi che entrambe verificassero tali requisiti, si è poi proceduto con l'estendere i modelli con uno stato fittizio, rappresentante l'integrale dell'errore, per la reiezione di disturbi costanti. Al fine di ottenere una legge di controllo discreta, tali rappresentazioni estese sono poi state convertite in modelli nello spazio di stato a tempo discreto. Quest'ultimi, infine, sono stati poi utilizzati per la progettazione di un controllore feedback state, i cui guadagni sono stati ottenuti mediante LQR.\bigskip
+Having obtained both representations in the state space, the first 
+step was to verify the reachability and the observability. Having 
+made sure that both of these requirements were verified,and then the 
+models were extended with a fictitious state, representing the full error,  
+for the rejection of constant disturbances. In order to obtain a law 
+of discrete control, such extended representations were then converted 
+into models in the discrete time state space. The latter were then 
+used to design a feedback state controller, whose gains 
+were obtained through LQR.\bigskip
 
-Data la non osservabilità dello stato, per ambedue gli approcci, è stato realizzato un osservatore di Luenberger, anch'esso ottenuto mediante la tecnica dell'LQR.\bigskip
+Due to the non-observability of the state, for both approaches, 
+a Luenberger observer, also obtained by the LQR technique, was made.
 
-Per una visione più completa riguardo i passi progettuali seguiti, si rimanda al codice MATLAB, considerato parte integrante di questo documento. \bigskip
+For a more complete view of the design steps followed, please refer 
+to the MATLAB code, which is considered an integral part of this 
+document.
 
 \begin{center}
-	\href{https://github.com/favallone20/DigitalControlSystemDesignProject/blob/master/Speed_Feedback_MATLAB_Simulink/Speed_State_Feedback.mlx}{\textbf{Controllo in velocità}}, \quad
-	\href{https://github.com/favallone20/DigitalControlSystemDesignProject/blob/master/Position_State_Feedback_MATLAB_Simulink/Position_State_Feedback.mlx}{\textbf{Controllo in posizione}} \bigskip
+	\href{https://github.com/favallone20/DigitalControlSystemDesignProject/blob/master/Speed_Feedback_MATLAB_Simulink/Speed_State_Feedback.mlx}{\textbf{Velocity control}}, \quad
+	\href{https://github.com/favallone20/DigitalControlSystemDesignProject/blob/master/Position_State_Feedback_MATLAB_Simulink/Position_State_Feedback.mlx}{\textbf{Position control}} \bigskip
 \end{center}
-Gli stessi approcci di controllo sono poi stati implementati utilizzando la tecnica del \textit{direct coding}, di cui di seguito sono riportati i link ai file sorgenti.
+The same control approaches were then implemented using the 
+\textit{direct coding}technique, the links, which reference to the source
+files, are written below.
 
 \begin{center}
 	\href{https://github.com/favallone20/DigitalControlSystemDesignProject/tree/master/Position_State_Feedback_Direct_Coding}{\textbf{Controllo in posizione direct coding}}, \quad
 	\href{https://github.com/favallone20/DigitalControlSystemDesignProject/tree/master/Speed_State_Feedback_Direct_Coding}{\textbf{Controllo in velocità direct coding}}
 \end{center}
 
-\section{Risultati ottenuti e discussione delle performance}
-Sia per il controllo in posizione che per il controllo in velocità, è stato seguito il modello di sviluppo model based a V che prevede una fase di testing ad ogni step di sviluppo. In particolare sono stati effettuati i task di validazione:
+\section{Results obtained and discussion of performance}
+Both for the control in position and for the control in speed, it has 
+been followed the model based development which previews a 
+phase of testing for each step of development. In particular, the 
+validation tasks were carried out:
 
 \begin{enumerate}
 	\item Model in the Loop (MIL);
@@ -168,50 +197,98 @@ Sia per il controllo in posizione che per il controllo in velocità, è stato se
 	\item Processor in the Loop (PIL);
 	\item Test sul processo reale;
 \end{enumerate}
-È doveroso sottolineare che la fase di test sul processo reale deve essere preceduta dalla fase Hardware in the Loop (HIL), la quale non è stata effettuata per via dell'indisponibilità dell'opportuna strumentazione.
+It should be noted that the test phase on the real process must be 
+preceded by the Hardware in the Loop (HIL) phase, which was not carried
+ out due to the unavailability of the appropriate instrumentation.
 
-\subsection{Risultati con controllo in posizione}
-Per le simulazioni del controllo in posizione sono stati utilizzati i seguenti riferimenti: $0$, $-2\pi$, $\pi$, $2\pi$, $0$, aggiornati ogni $2s$ mediante uno Stateflow chart.\bigskip
+\subsection{Results with control in position}
+For the simulations of the control in place the following references 
+were used: $0$, $-2\pi$, $\pi$, $2\pi$, $0$, updated every $2s$ 
+through a Stateflow chart. \bigskip
 
-Dalle diverse simulazioni corrispondenti ai diversi task di validazione si può notare che la risposta del sistema resta pressoché invariata, con tempi di assestamento inferiori al secondo e un comportamento abbastanza privo di sovra-elongazione. I picchi un po' più rilevanti si ottengono quando il riferimento cambia in modulo di un valore almeno pari a $2\pi$. Tale comportamento dipende dalla presenza dell'azione integrale, che in assenza di uno schema anti windup, con errori più grandi fa saturare l'ingresso di controllo al limite dell'attuatore.\bigskip
+From the various simulations corresponding to the different validation
+tasks it can be noticed that the system response remains almost 
+unchanged, with a settling time less than 1 second and a behavior 
+quite free of overshoot. The slightly more relevant peaks are 
+obtained when the reference changes in form by a value of at least 
+$2 \pi$. This behavior depends on the presence of the integral action,
+which in the absence of an anti windup scheme, with larger errors 
+makes the control input saturated at the limit of the actuator. 
+\bigskip
 
-Nelle Figure \ref{fig:Position_State_Feedback_Simulation}, \ref{fig:Position_State_Feedback_SIL_Simulation}, \ref{fig:Position_State_Feedback_PIL_Simulation} sono riportate rispettivamente le risposte del motore nella fase di validazione MIL, SIL, PIL. Inoltre, nelle Figure \ref{fig:Position_State_Feedback_SIL_Code_Profiling} e \ref{fig:Position_State_Feedback_PIL_Code_Profiling} sono riportati rispettivamente i tempi di esecuzione relativi alla validazione SIL e PIL. Come lecito aspettarsi, la validazione SIL ha richiesto tempi notevolmente inferiori a quella PIL.\bigskip
+In the figures \ref{fig:Position_State_Feedback_Simulation}, 
+\ref{fig:Position_State_Feedback_SIL_Simulation}, 
+\ref{fig:Position_State_Feedback_PIL_Simulation} are reported 
+the relative outputs  in the MIL, 
+SIL, PIL phase. In addition, in the figures  
+\ref{fig:Position_State_Feedback_SIL_Code_Profiling} and
+\ref{fig:Position_State_Feedback_PIL_Code_Profiling} are reported 
+the relative execution time of SIL and PIL phase. 
+As can be expected, SIL validation took time 
+considerably lower than PIL.\bigskip
 
-Un'attenzione particolare va rivolta all'esecuzione dell'algoritmo di controllo sul motore fisico. Le risposte rispettivamente dell'algoritmo auto generato e di quello ottenuto mediante direct coding sono riportate in Figura \ref{fig:Position_State_Feedback_Motor_Simulation} e in Figura \ref{fig:Position_State_Feedback_Direct_Coding}. Dalle figure si può notare che la risposta del motore ha un comportamento leggermente oscillatorio attorno al valore del riferimento. Ciò dipende dalla risoluzione fisica del motore che non consente di ottenere una posizione angolare perfettamente coincidente con il riferimento.
-
+Particular attention should be paid to the execution of the control 
+algorithm on the physical engine. The responses of the auto-generated 
+algorithm and the direct coding algorithm respectively are given in 
+Figure \ref{fig:Position_State_Feedback_Motor_Simulation} e in Figure 
+\ref{fig:Position_State_Feedback_Direct_Coding}. 
+From these figures it is possible to notice that the motor response 
+has a slightly oscillatory behavior around the reference value. This 
+depends on the physical resolution of the motor that does not allow 
+to obtain an angular position perfectly coinciding with the reference.
 
 \subsection{Risultati con controllo in velocità}
-Per le simulazioni del controllo in velocità sono stati utilizzati i seguenti riferimenti: $0$, $80$, $125$, $0$, $-80$, $-125$, aggiornati ogni $2s$ mediante uno Stateflow chart.\bigskip
+The following references were used for speed control simulations: 
+$0$, $80$, $125$, $0$, $-80$, $-125$, updated every $2s$ 
+through a Stateflow chart. \bigskip
 
-Anche in questo caso nelle simulazioni corrispondenti ai diversi task di validazione la risposta del sistema resta pressoché invariata, con tempi di assestamento di circa mezzo secondo e un comportamento totalmente privo di sovra-elongazione.\bigskip
+Also in this case in the simulations correspondent the answer of 
+the system remains almost unchanged, with times of settling of 
+approximately half second and a behavior totally free of overshoot.
+\bigskip
 
-Nelle Figure \ref{fig:Speed_State_Feedback_Simulation}, \ref{fig:Speed_State_Feedback_SIL_Simulation}, \ref{fig:Speed_State_Feedback_PIL_Simulation} sono riportate rispettivamente le risposte del motore nella fase di validazione MIL, SIL, PIL. Inoltre, nelle Figure \ref{fig:Speed_State_Feedback_SIL_Code_Profiling} e \ref{fig:Speed_State_Feedback_PIL_Code_Profiling} sono riportati rispettivamente i tempi di esecuzione relativi alla validazione SIL e PIL. Come lecito aspettarsi anche in questo, la validazione SIL ha richiesto tempi notevolmente inferiori a quella PIL.\bigskip
+In the Figures \ref{fig:Speed_State_Feedback_Simulation}, 
+\ref{fig:Speed_State_Feedback_SIL_Simulation}, 
+\ref{fig:Speed_State_Feedback_PIL_Simulation} are reported the relative 
+motor outputs in the MIL, SIL, PIL validation phases. 
+In addition, in the figures 
+\ref{fig:Speed_State_Feedback_SIL_Code_Profiling} and
+\ref{fig:Speed_State_Feedback_PIL_Code_Profiling} are reported 
+the relative execution times of the SIL and PIL validation. 
+As can be expected, SIL validation took time considerably lower than 
+PIL.\bigskip
 
-Un'attenzione particolare va rivolta all'esecuzione dell'algoritmo di controllo sul motore fisico. Le risposte rispettivamente dell'algoritmo auto generato e di quello ottenuto mediante direct coding sono riportate in Figura \ref{fig:Speed_State_Feedback_Motor_Simulation} e in Figura \ref{fig:Speed_State_Feedback_Direct_Coding}. Dalle figure si può notare che la risposta del motore ha dei picchi continui dovuti all'errore della stima della velocità a causa della perdita di ticks dell'encoder.
-
+Particular attention should be paid to the execution of the control 
+algorithm on the physical engine. The responses to the auto-generated 
+algorithm and the direct coding algorithm respectively are given in 
+Figure \ref{fig:Speed_State_Feedback_Motor_Simulation} and in Figure 
+\ref{fig:Speed_State_Feedback_Direct_Coding}. From the figures it can 
+be noticed that the response of the motor has of the continuous peaks 
+due to the error of the estimate of the speed because of the loss of 
+ticks of the encoder.
 
 \newpage
 \appendix
-\section{Simulazioni}
-\subsection{Controllo in posizione}
+\section{Simulations}
+\subsection{Position control}
 
-\img{1}{Position_State_Feedback_Simulation}{Simulazione MIL del controllo di posizione.}
-\img{1}{Position_State_Feedback_SIL_Simulation}{Simulazione SIL del controllo di posizione.}
-\img{1}{Position_State_Feedback_SIL_Code_Profiling}{Tempi di esecuzione della simulazione SIL del controllo di posizione.}
-\img{1}{Position_State_Feedback_PIL_Simulation}{Simulazione PIL del controllo di posizione.}
-\img{1}{Position_State_Feedback_PIL_Code_Profiling}{Tempi di esecuzione della simulazione PIL del controllo di posizione.}
-\img{1}{Position_State_Feedback_Motor_Simulation}{Esecuzione sul motore fisico del controllo di posizione, mediante auto generazione del codice.}
-\img{1}{Position_State_Feedback_Direct_Coding}{Esecuzione sul motore fisico del controllo di posizione, mediante la tecnica del direct coding.}
+\img{1}{Position_State_Feedback_Simulation}{MIL Simulation with position control}
+\img{1}{Position_State_Feedback_SIL_Simulation}{SIL Simulation with position control}
+\img{1}{Position_State_Feedback_SIL_Code_Profiling}{Execution times of the SIL simulation with position control}
+\img{1}{Position_State_Feedback_PIL_Simulation}{PIL Simulation with position control}
+\img{1}{Position_State_Feedback_PIL_Code_Profiling}{Execution times of the PIL simulation with position control}
+\img{1}{Position_State_Feedback_Motor_Simulation}{Execution on the real motor of the position control, with the auto-generated code}
+\img{1}{Position_State_Feedback_Direct_Coding}{Execution on the real motor of the position control, with the direct coding approach}
 
-\subsection{Controllo in velocità}
-\img{1}{Speed_State_Feedback_Simulation}{Simulazione MIL del controllo di velocità.}
+\subsection{Velocity control}
+\img{1}{Speed_State_Feedback_Simulation}{MIL simulation for velocity control.}
 \newpage
-\img{1}{Speed_State_Feedback_SIL_Simulation}{Simulazione SIL del controllo di velocità.}
-\img{1}{Speed_State_Feedback_SIL_Code_Profiling}{Tempi di esecuzione della simulazione SIL del controllo di velocità.}
-\img{1}{Speed_State_Feedback_PIL_Simulation}{Simulazione PIL del controllo di velocità.}
-\img{1}{Speed_State_Feedback_PIL_Code_Profiling}{Tempi di esecuzione della simulazione PIL del controllo di velocità.}
-\img{1}{Speed_State_Feedback_Motor_Simulation}{Esecuzione sul motore fisico del controllo di velocità, mediante auto generazione del codice.}
-\img{1}{Speed_State_Feedback_Direct_Coding}{Esecuzione sul motore fisico del controllo di velocità, mediante la tecnica del direct coding.}
+\img{1}{Speed_State_Feedback_SIL_Simulation}{SIL simulation with velocity control.}
+\img{1}{Speed_State_Feedback_SIL_Code_Profiling}{Execution times of SIL simulation with velocity control}
+\img{1}{Speed_State_Feedback_PIL_Simulation}{PIL simulation with control velocity.}
+\img{1}{Speed_State_Feedback_PIL_Code_Profiling}{Execution times of PIL simulation with velocity control.}
+\img{1}{Speed_State_Feedback_Motor_Simulation}{Execution on the real motor of the velocity control, with the auto-generated code}
+\img{1}{Speed_State_Feedback_Direct_Coding}{Execution on the real motor of the velocity control, with the direct coding approach}
 
 \newpage
 
